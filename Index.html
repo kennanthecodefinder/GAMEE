@@ -1,0 +1,112 @@
+<script>
+let hunger = 80;
+let cleanStat = 80;
+let energy = 80;
+let happiness = 80;
+
+const mouth = document.getElementById("mouth");
+const hungerBar = document.getElementById("hungerBar");
+const cleanBar = document.getElementById("cleanBar");
+const energyBar = document.getElementById("energyBar");
+const happyBar = document.getElementById("happyBar");
+
+// 💾 SAVE SYSTEM
+function saveGame() {
+  const data = {
+    hunger,
+    cleanStat,
+    energy,
+    happiness
+  };
+  localStorage.setItem("kawaiiPetSave", JSON.stringify(data));
+}
+
+function loadGame() {
+  const save = localStorage.getItem("kawaiiPetSave");
+  if (save) {
+    const data = JSON.parse(save);
+    hunger = data.hunger;
+    cleanStat = data.cleanStat;
+    energy = data.energy;
+    happiness = data.happiness;
+  }
+}
+
+// 🔧 helper
+function clamp(v) {
+  return Math.max(0, Math.min(100, v));
+}
+
+// 🎭 update UI
+function updateBars() {
+  hungerBar.style.width = hunger + "%";
+  cleanBar.style.width = cleanStat + "%";
+  energyBar.style.width = energy + "%";
+  happyBar.style.width = happiness + "%";
+
+  let mood = (hunger + cleanStat + energy + happiness) / 4;
+
+  if (mood > 70) {
+    mouth.style.borderBottom = "3px solid black";
+    mouth.style.borderTop = "none";
+  } else if (mood > 30) {
+    mouth.style.borderBottom = "2px solid black";
+    mouth.style.borderTop = "none";
+  } else {
+    mouth.style.borderBottom = "none";
+    mouth.style.borderTop = "3px solid black";
+  }
+}
+
+// 🎮 actions
+function feed() {
+  hunger = clamp(hunger + 15);
+  happiness = clamp(happiness + 5);
+  updateBars();
+}
+
+function clean() {
+  cleanStat = clamp(cleanStat + 20);
+  happiness = clamp(happiness + 3);
+  updateBars();
+}
+
+function sleep() {
+  energy = clamp(energy + 25);
+  updateBars();
+}
+
+function play() {
+  happiness = clamp(happiness + 15);
+  energy = clamp(energy - 10);
+  hunger = clamp(hunger - 5);
+  updateBars();
+}
+
+// 🔁 passive decay
+setInterval(() => {
+  hunger = clamp(hunger - 2);
+  cleanStat = clamp(cleanStat - 1);
+  energy = clamp(energy - 2);
+  happiness = clamp(happiness - 1);
+
+  updateBars();
+}, 3000);
+
+// 💾 autosave every 2 sec
+setInterval(saveGame, 2000);
+
+// 🔄 reset
+function resetGame() {
+  localStorage.removeItem("kawaiiPetSave");
+  hunger = 80;
+  cleanStat = 80;
+  energy = 80;
+  happiness = 80;
+  updateBars();
+}
+
+// 🚀 START GAME
+loadGame();
+updateBars();
+</script>
