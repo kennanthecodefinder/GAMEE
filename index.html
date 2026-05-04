@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title> Mini Pet 🌸</title>
+  <style>
+    body {
+      text-align: center;
+      font-family: sans-serif;
+      background: linear-gradient(#ffd6ec, #fff0f7);
+    }
+
+    h1 { color: #ff6fa5; }
+
+    /* Character */
+    #pet {
+      width: 150px;
+      height: 150px;
+      background: white;
+      border-radius: 50%;
+      margin: 20px auto;
+      position: relative;
+      transition: 0.3s;
+    }
+
+    .eye {
+      width: 12px;
+      height: 12px;
+      background: black;
+      border-radius: 50%;
+      position: absolute;
+      top: 50px;
+    }
+    .left { left: 40px; }
+    .right { right: 40px; }
+
+    #mouth {
+      width: 30px;
+      height: 15px;
+      border-bottom: 3px solid black;
+      border-radius: 0 0 20px 20px;
+      position: absolute;
+      bottom: 40px;
+      left: 50%;
+      transform: translateX(-50%);
+    }
+
+    .blush {
+      width: 15px;
+      height: 10px;
+      background: pink;
+      border-radius: 50%;
+      position: absolute;
+      top: 70px;
+      opacity: 0.6;
+    }
+    .blush.left { left: 20px; }
+    .blush.right { right: 20px; }
+
+    /* Bars */
+    .bar {
+      width: 200px;
+      margin: 5px auto;
+      background: #eee;
+      border-radius: 10px;
+      overflow: hidden;
+    }
+
+    .fill {
+      height: 15px;
+      background: pink;
+      width: 50%;
+    }
+
+    button {
+      padding: 10px;
+      margin: 5px;
+      border-radius: 15px;
+      border: none;
+      background: #ffb6d9;
+      cursor: pointer;
+    }
+
+    button:hover { background: #ff8fc4; }
+  </style>
+</head>
+<body>
+
+<h1>🌸 My Mini Pet 🌸</h1>
+
+<div id="pet">
+  <div class="eye left"></div>
+  <div class="eye right"></div>
+  <div id="mouth"></div>
+  <div class="blush left"></div>
+  <div class="blush right"></div>
+</div>
+
+<p>🍡 Hunger</p>
+<div class="bar"><div id="hungerBar" class="fill"></div></div>
+
+<p>🧼 Cleanliness</p>
+<div class="bar"><div id="cleanBar" class="fill"></div></div>
+
+<p>😴 Energy</p>
+<div class="bar"><div id="energyBar" class="fill"></div></div>
+
+<p>💖 Happiness</p>
+<div class="bar"><div id="happyBar" class="fill"></div></div>
+
+<br>
+
+<button onclick="feed()">🍡 Feed</button>
+<button onclick="clean()">🧼 Clean</button>
+<button onclick="sleep()">😴 Sleep</button>
+<button onclick="play()">🎾 Play</button>
+
+<script>
+let hunger = 80;
+let cleanStat = 80;
+let energy = 80;
+let happiness = 80;
+
+const mouth = document.getElementById("mouth");
+
+function clamp(v) {
+  return Math.max(0, Math.min(100, v));
+}
+
+function updateBars() {
+  hungerBar.style.width = hunger + "%";
+  cleanBar.style.width = cleanStat + "%";
+  energyBar.style.width = energy + "%";
+  happyBar.style.width = happiness + "%";
+
+  let mood = (hunger + cleanStat + energy + happiness) / 4;
+
+  if (mood > 70) {
+    mouth.style.borderBottom = "3px solid black";
+    mouth.style.borderTop = "none";
+  } else if (mood > 30) {
+    mouth.style.borderBottom = "2px solid black";
+  } else {
+    mouth.style.borderBottom = "none";
+    mouth.style.borderTop = "3px solid black";
+  }
+}
+
+function feed() {
+  hunger = clamp(hunger + 15);
+  happiness += 5;
+  updateBars();
+}
+
+function clean() {
+  cleanStat = clamp(cleanStat + 20);
+  happiness += 3;
+  updateBars();
+}
+
+function sleep() {
+  energy = clamp(energy + 25);
+  updateBars();
+}
+
+function play() {
+  happiness = clamp(happiness + 15);
+  energy -= 10;
+  hunger -= 5;
+  updateBars();
+}
+
+// passive decay
+setInterval(() => {
+  hunger -= 2;
+  cleanStat -= 1;
+  energy -= 2;
+  happiness -= 1;
+
+  hunger = clamp(hunger);
+  cleanStat = clamp(cleanStat);
+  energy = clamp(energy);
+  happiness = clamp(happiness);
+
+  updateBars();
+}, 3000);
+
+updateBars();
+</script>
+
+</body>
+</html>
