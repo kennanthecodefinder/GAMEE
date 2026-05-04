@@ -1,0 +1,314 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Mini Cat Pet 🐱🌸</title>
+
+<style>
+body{
+  margin:0;
+  font-family:sans-serif;
+  text-align:center;
+  background:linear-gradient(#ffd6ec,#fff0f7);
+  overflow:hidden;
+}
+
+/* TOP UI */
+h1{color:#ff6fa5;font-size:20px;margin:8px;}
+small{display:block;color:#666}
+
+/* PET AREA */
+#world{
+  position:relative;
+  height:220px;
+}
+
+/* CAT */
+#pet{
+  width:110px;
+  height:110px;
+  background:white;
+  border-radius:50%;
+  position:absolute;
+  left:50%;
+  top:60px;
+  transform:translateX(-50%);
+  transition:0.3s;
+}
+
+/* ears */
+.ear{
+  width:22px;height:22px;
+  background:white;
+  position:absolute;
+  top:-8px;
+  transform:rotate(45deg);
+}
+.ear::after{
+  content:"";
+  width:10px;height:10px;
+  background:#ffb6d9;
+  position:absolute;
+  top:6px;left:6px;
+  border-radius:50%;
+}
+.leftEar{left:18px;}
+.rightEar{right:18px;}
+
+/* face */
+.eye{
+  width:10px;height:10px;
+  background:black;
+  border-radius:50%;
+  position:absolute;
+  top:40px;
+}
+.left{left:30px;}
+.right{right:30px;}
+
+#mouth{
+  width:18px;height:10px;
+  border-bottom:3px solid black;
+  border-radius:50%;
+  position:absolute;
+  bottom:30px;
+  left:50%;
+  transform:translateX(-50%);
+}
+
+.blush{
+  width:10px;height:8px;
+  background:pink;
+  border-radius:50%;
+  position:absolute;
+  top:55px;
+  opacity:0.6;
+}
+.blush.left{left:15px;}
+.blush.right{right:15px;}
+
+/* BARS */
+.bar{
+  width:80%;
+  max-width:260px;
+  margin:4px auto;
+  background:#eee;
+  border-radius:10px;
+}
+.fill{
+  height:10px;
+  background:pink;
+  width:50%;
+  transition:0.3s;
+}
+
+/* BUTTONS */
+button{
+  width:42%;
+  max-width:150px;
+  padding:10px;
+  margin:4px;
+  border:none;
+  border-radius:12px;
+  background:#ffb6d9;
+}
+button:active{transform:scale(0.95);}
+
+/* COINS */
+#coins{
+  font-weight:bold;
+  color:#ff6fa5;
+}
+
+/* SHOP */
+#shop{
+  margin-top:8px;
+}
+
+/* animations */
+.happy{animation:wiggle 0.4s;}
+@keyframes wiggle{
+  0%{transform:rotate(0);}
+  25%{transform:rotate(5deg);}
+  50%{transform:rotate(-5deg);}
+  100%{transform:rotate(0);}
+}
+
+/* day/night */
+.night{
+  background:linear-gradient(#1c1c3c,#3a2f5c)!important;
+  color:white;
+}
+</style>
+</head>
+
+<body>
+
+<h1>🐱 <span id="name">My Cat</span></h1>
+<small id="coins">🪙 Coins: 0</small>
+
+<div id="world">
+  <div id="pet">
+    <div class="ear leftEar"></div>
+    <div class="ear rightEar"></div>
+    <div class="eye left"></div>
+    <div class="eye right"></div>
+    <div id="mouth"></div>
+    <div class="blush left"></div>
+    <div class="blush right"></div>
+  </div>
+</div>
+
+<p>🍡 Hunger</p><div class="bar"><div id="hungerBar" class="fill"></div></div>
+<p>🧼 Clean</p><div class="bar"><div id="cleanBar" class="fill"></div></div>
+<p>⚡ Energy</p><div class="bar"><div id="energyBar" class="fill"></div></div>
+<p>💖 Happy</p><div class="bar"><div id="happyBar" class="fill"></div></div>
+
+<div>
+<button onclick="feed()">🍡 Feed (5🪙)</button>
+<button onclick="clean()">🧼 Clean</button>
+<button onclick="play()">🎾 Play</button>
+<button onclick="sleep()">😴 Sleep</button>
+</div>
+
+<div id="shop">
+<button onclick="buyFood()">🍗 Buy Food (10🪙)</button>
+<button onclick="buyToy()">🧸 Buy Toy (15🪙)</button>
+</div>
+
+<script>
+/* CORE */
+let hunger=80, clean=80, energy=80, happy=80;
+let coins=0;
+let petName="My Cat";
+
+const pet=document.getElementById("pet");
+const world=document.getElementById("world");
+
+/* LOAD */
+function load(){
+  let s=JSON.parse(localStorage.getItem("petFull"));
+  if(s){
+    ({hunger,clean,energy,happy,coins,petName}=s);
+    document.getElementById("name").textContent=petName;
+  }
+}
+
+/* SAVE */
+function save(){
+  localStorage.setItem("petFull",JSON.stringify({
+    hunger,clean,energy,happy,coins,petName,
+    last:Date.now()
+  }));
+}
+
+/* OFFLINE PROGRESS */
+function offline(){
+  let s=JSON.parse(localStorage.getItem("petFull"));
+  if(!s)return;
+  let diff=(Date.now()-s.last)/1000;
+  hunger-=diff*0.02;
+  clean-=diff*0.01;
+  energy-=diff*0.02;
+  happy-=diff*0.01;
+}
+
+/* clamp */
+const c=v=>Math.max(0,Math.min(100,v));
+
+/* UI */
+function update(){
+  hunger=c(hunger);clean=c(clean);energy=c(energy);happy=c(happy);
+
+  hungerBar.style.width=hunger+"%";
+  cleanBar.style.width=clean+"%";
+  energyBar.style.width=energy+"%";
+  happyBar.style.width=happy+"%";
+
+  coinsEl();
+}
+
+/* coins UI */
+function coinsEl(){
+  document.getElementById("coins").textContent="🪙 Coins: "+coins;
+}
+
+/* actions */
+function feed(){
+  if(coins<5)return;
+  coins-=5;
+  hunger+=15;happy+=5;
+  react();
+  update();save();
+}
+
+function clean(){
+  clean+=20;happy+=3;react();update();save();
+}
+
+function play(){
+  happy+=15;energy-=10;hunger-=5;react();coinGain();update();save();
+}
+
+function sleep(){
+  energy+=25;pet.classList.add("sleep");
+  setTimeout(()=>pet.classList.remove("sleep"),1000);
+  update();save();
+}
+
+/* coins gain */
+function coinGain(){
+  coins+=2;
+}
+
+/* shop */
+function buyFood(){
+  if(coins>=10){coins-=10;hunger+=25;update();save();}
+}
+function buyToy(){
+  if(coins>=15){coins-=15;happy+=25;update();save();}
+}
+
+/* react */
+function react(){
+  pet.classList.add("happy");
+  setTimeout(()=>pet.classList.remove("happy"),400);
+}
+
+/* walking */
+setInterval(()=>{
+  let x=Math.random()*60;
+  pet.style.left=x+"%";
+},4000);
+
+/* blink */
+setInterval(()=>{
+  document.querySelectorAll(".eye").forEach(e=>e.style.height="2px");
+  setTimeout(()=>{
+    document.querySelectorAll(".eye").forEach(e=>e.style.height="10px");
+  },150);
+},3000);
+
+/* decay */
+setInterval(()=>{
+  hunger-=2;clean-=1;energy-=2;happy-=1;
+  coins+=1;
+  update();
+},3000);
+
+/* night mode */
+setInterval(()=>{
+  if(Math.random()>0.7){
+    document.body.classList.toggle("night");
+  }
+},8000);
+
+/* init */
+offline();
+load();
+update();
+setInterval(save,2000);
+</script>
+
+</body>
+  </html>
