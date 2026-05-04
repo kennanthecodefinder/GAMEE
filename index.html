@@ -1,0 +1,330 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>🌸</title>
+
+  <style>
+    body {
+      text-align: center;
+      font-family: sans-serif;
+      background: linear-gradient(#ffd6ec, #fff0f7);
+      margin: 0;
+      padding: 10px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+
+    h1 {
+      color: #ff6fa5;
+      font-size: 22px;
+      margin: 10px 0;
+    }
+
+    /* CAT PET */
+    #pet {
+      width: 120px;
+      height: 120px;
+      background: white;
+      border-radius: 50%;
+      margin: 20px auto;
+      position: relative;
+      animation: bounce 2s infinite ease-in-out;
+      transition: 0.3s;
+    }
+
+    @keyframes bounce {
+      0%, 100% { transform: translateY(0); }
+      50% { transform: translateY(-8px); }
+    }
+
+    /* EARS */
+    .ear {
+      width: 25px;
+      height: 25px;
+      background: white;
+      position: absolute;
+      top: -10px;
+      transform: rotate(45deg);
+      border-radius: 4px;
+    }
+
+    .leftEar { left: 20px; }
+    .rightEar { right: 20px; }
+
+    .ear::after {
+      content: "";
+      width: 12px;
+      height: 12px;
+      background: #ffb6d9;
+      position: absolute;
+      top: 6px;
+      left: 6px;
+      border-radius: 50%;
+    }
+
+    /* FACE */
+    .eye {
+      width: 10px;
+      height: 10px;
+      background: black;
+      border-radius: 50%;
+      position: absolute;
+      top: 40px;
+    }
+
+    .left { left: 35px; }
+    .right { right: 35px; }
+
+    #mouth {
+      width: 20px;
+      height: 10px;
+      border-bottom: 3px solid black;
+      border-radius: 50%;
+      position: absolute;
+      bottom: 35px;
+      left: 50%;
+      transform: translateX(-50%);
+    }
+
+    .blush {
+      width: 12px;
+      height: 8px;
+      background: pink;
+      border-radius: 50%;
+      position: absolute;
+      top: 55px;
+      opacity: 0.6;
+    }
+
+    .blush.left { left: 15px; }
+    .blush.right { right: 15px; }
+
+    /* BARS */
+    .bar {
+      width: 80%;
+      max-width: 250px;
+      margin: 6px auto;
+      background: #eee;
+      border-radius: 10px;
+      overflow: hidden;
+    }
+
+    .fill {
+      height: 12px;
+      background: pink;
+      width: 50%;
+      transition: 0.3s;
+    }
+
+    /* BUTTONS */
+    button {
+      padding: 12px;
+      margin: 4px;
+      border-radius: 12px;
+      border: none;
+      background: #ffb6d9;
+      cursor: pointer;
+      font-size: 14px;
+      width: 42%;
+      max-width: 150px;
+    }
+
+    button:hover {
+      background: #ff8fc4;
+    }
+
+    /* animations */
+    .happy {
+      animation: wiggle 0.5s;
+    }
+
+    @keyframes wiggle {
+      0% { transform: rotate(0deg); }
+      25% { transform: rotate(5deg); }
+      50% { transform: rotate(-5deg); }
+      75% { transform: rotate(3deg); }
+      100% { transform: rotate(0deg); }
+    }
+
+    .sleep {
+      opacity: 0.6;
+    }
+  </style>
+</head>
+
+<body>
+
+<h1>🌸</h1>
+
+<div id="pet">
+  <div class="ear leftEar"></div>
+  <div class="ear rightEar"></div>
+
+  <div class="eye left" id="eyeL"></div>
+  <div class="eye right" id="eyeR"></div>
+
+  <div id="mouth"></div>
+
+  <div class="blush left"></div>
+  <div class="blush right"></div>
+</div>
+
+<p>🍡 Hunger</p>
+<div class="bar"><div id="hungerBar" class="fill"></div></div>
+
+<p>🧼 Cleanliness</p>
+<div class="bar"><div id="cleanBar" class="fill"></div></div>
+
+<p>😴 Energy</p>
+<div class="bar"><div id="energyBar" class="fill"></div></div>
+
+<p>💖 Happiness</p>
+<div class="bar"><div id="happyBar" class="fill"></div></div>
+
+<div>
+  <button onclick="feed()">🍡 Feed</button>
+  <button onclick="clean()">🧼 Clean</button>
+  <button onclick="sleep()">😴 Sleep</button>
+  <button onclick="play()">🎾 Play</button>
+  <button onclick="resetGame()">🔄 Reset</button>
+</div>
+
+<script>
+let hunger = 80;
+let cleanStat = 80;
+let energy = 80;
+let happiness = 80;
+
+const pet = document.getElementById("pet");
+const eyeL = document.getElementById("eyeL");
+const eyeR = document.getElementById("eyeR");
+const mouth = document.getElementById("mouth");
+
+const hungerBar = document.getElementById("hungerBar");
+const cleanBar = document.getElementById("cleanBar");
+const energyBar = document.getElementById("energyBar");
+const happyBar = document.getElementById("happyBar");
+
+/* 💾 SAVE SYSTEM */
+function saveGame() {
+  localStorage.setItem("pet", JSON.stringify({
+    hunger,
+    cleanStat,
+    energy,
+    happiness
+  }));
+}
+
+function loadGame() {
+  const data = JSON.parse(localStorage.getItem("pet"));
+  if (data) {
+    hunger = data.hunger;
+    cleanStat = data.cleanStat;
+    energy = data.energy;
+    happiness = data.happiness;
+  }
+}
+
+/* clamp */
+function clamp(v) {
+  return Math.max(0, Math.min(100, v));
+}
+
+/* update UI */
+function updateBars() {
+  hungerBar.style.width = hunger + "%";
+  cleanBar.style.width = cleanStat + "%";
+  energyBar.style.width = energy + "%";
+  happyBar.style.width = happiness + "%";
+
+  let mood = (hunger + cleanStat + energy + happiness) / 4;
+
+  if (mood > 70) {
+    mouth.style.borderBottom = "3px solid black";
+  } else if (mood > 30) {
+    mouth.style.borderBottom = "2px solid black";
+  } else {
+    mouth.style.borderBottom = "none";
+    mouth.style.borderTop = "3px solid black";
+  }
+}
+
+/* blink */
+setInterval(() => {
+  eyeL.style.height = "2px";
+  eyeR.style.height = "2px";
+
+  setTimeout(() => {
+    eyeL.style.height = "10px";
+    eyeR.style.height = "10px";
+  }, 150);
+}, 3000);
+
+/* react */
+function react() {
+  pet.classList.add("happy");
+  setTimeout(() => pet.classList.remove("happy"), 500);
+}
+
+/* actions */
+function feed() {
+  hunger = clamp(hunger + 15);
+  happiness = clamp(happiness + 5);
+  react();
+  updateBars();
+}
+
+function clean() {
+  cleanStat = clamp(cleanStat + 20);
+  happiness = clamp(happiness + 3);
+  react();
+  updateBars();
+}
+
+function sleep() {
+  energy = clamp(energy + 25);
+  pet.classList.add("sleep");
+  setTimeout(() => pet.classList.remove("sleep"), 1000);
+  updateBars();
+}
+
+function play() {
+  happiness = clamp(happiness + 15);
+  energy = clamp(energy - 10);
+  hunger = clamp(hunger - 5);
+  react();
+  updateBars();
+}
+
+/* decay */
+setInterval(() => {
+  hunger = clamp(hunger - 2);
+  cleanStat = clamp(cleanStat - 1);
+  energy = clamp(energy - 2);
+  happiness = clamp(happiness - 1);
+
+  updateBars();
+}, 3000);
+
+/* autosave */
+setInterval(saveGame, 2000);
+
+/* reset */
+function resetGame() {
+  localStorage.removeItem("pet");
+  hunger = 80;
+  cleanStat = 80;
+  energy = 80;
+  happiness = 80;
+  updateBars();
+}
+
+/* start */
+loadGame();
+updateBars();
+</script>
+
+</body>
+  </html>
